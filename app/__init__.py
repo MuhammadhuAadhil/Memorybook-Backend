@@ -1,0 +1,1 @@
+"""MemoryBook FastAPI service."""
