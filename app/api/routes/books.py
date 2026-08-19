@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.api.deps import CurrentUserId
 from app.schemas.books import BookCreate, BookUpdate
-from app.services.books import owned_book
+from app.services.books import ensure_profile, owned_book
 from app.services.supabase import admin_client
 
 router = APIRouter(prefix="/books", tags=["books"])
@@ -18,6 +18,7 @@ def list_books(user_id: CurrentUserId, status_filter: str | None = None):
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_book(payload: BookCreate, user_id: CurrentUserId):
+    ensure_profile(user_id)
     return admin_client.table("books").insert({"user_id": user_id, "title": "My MemoryBook", "size": payload.size, "status": "draft"}).execute().data[0]
 
 

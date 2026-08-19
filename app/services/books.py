@@ -9,6 +9,15 @@ def data_or_404(response, message: str):
     return response.data[0] if isinstance(response.data, list) else response.data
 
 
+def ensure_profile(user_id: str) -> None:
+    """Ensure the Auth user has the profile row required by books.user_id.
+
+    The database trigger is the primary mechanism. This idempotent safeguard
+    also covers users created before the trigger was installed.
+    """
+    admin_client.table("profiles").upsert({"id": user_id}, on_conflict="id").execute()
+
+
 def owned_book(book_id: str, user_id: str) -> dict:
     response = admin_client.table("books").select("*").eq("id", book_id).eq("user_id", user_id).limit(1).execute()
     return data_or_404(response, "Book not found.")
